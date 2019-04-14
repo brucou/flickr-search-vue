@@ -4,6 +4,8 @@ import { createStateMachine, decorateWithEntryActions, fsmContracts } from "stat
 import { makeVueStateMachine } from "vue-state-driven";
 import { imageGalleryVueMachineDef } from "./imageGalleryVueMachineDef";
 import { imageGalleryFsmDef } from "./fsm"
+import "./index.css";
+import "./gallery.css";
 
 Vue.config.productionTip = false
 

@@ -1,18 +1,22 @@
-import { COMMAND_RENDER, COMMAND_SEARCH, NO_INTENT } from "./properties"
+import { COMMAND_SEARCH, NO_INTENT } from "./properties"
+import {COMMAND_RENDER} from "vue-state-driven"
 import { INIT_EVENT } from "state-transducer"
 import  GalleryApp from "./GalleryApp"
 import Flipping from "flipping"
-import { getEventEmitterAdapter, runSearchQuery } from "./helpers"
-import emitonoff from "emitonoff";
+import { destructureEvent, runSearchQuery } from "./helpers"
+import { filter, map } from "rxjs/operators"
+import { Subject } from "rxjs"
 
 const flipping = new Flipping();
+const stateTransducerRxAdapter = {
+  subjectFactory: () => new Subject()
+};
 
 export const imageGalleryVueMachineDef = {
-  props: ["query", "photo", "items", "gallery", "next"],
+  props: ["query", "photo", "items", "gallery"],
   options: { initialEvent: ["START"] },
   renderWith: GalleryApp,
-  subjectFactory: getEventEmitterAdapter(emitonoff).subjectFactory,
-  // TODO : remove and directly set the right thing in GalleryApp
+  eventHandler: stateTransducerRxAdapter,
   preprocessor: rawEventSource =>
     rawEventSource.pipe(
       map(ev => {
@@ -25,7 +29,6 @@ export const imageGalleryVueMachineDef = {
         else if (rawEventName === "START") {
           return { START: void 0 };
         } else if (rawEventName === "onSubmit") {
-          e.persist();
           e.preventDefault();
           return { SEARCH: ref.current.value };
         } else if (rawEventName === "onCancelClick") {
@@ -51,7 +54,6 @@ export const imageGalleryVueMachineDef = {
         return NO_INTENT;
       }),
       filter(x => x !== NO_INTENT),
-      // startWith({ START: void 0 })
     ),
   commandHandlers: {
     [COMMAND_SEARCH]: (next, query, effectHandlers) => {
@@ -67,15 +69,12 @@ export const imageGalleryVueMachineDef = {
   },
   effectHandlers: {
     runSearchQuery: runSearchQuery,
-    // TODO : how to do flipping with Vue?? maybe change the fsm to have the flipping read and flip as command but
-    // better change the render function - cf. vue-state-driven TODO
-    [COMMAND_RENDER]: (machineComponent, renderWith, params, next) => {
-      // Applying flipping animations : read DOM before render, and flip after render
-      flipping.read();
-      machineComponent.setState(
-        { render: React.createElement(renderWith, Object.assign({}, params, { next }), []) },
-        () => flipping.flip()
-      );
+    // NOTE: we don't use flipping for that Vue example. It is possible to do so with entry actions:
+    // [flip.read, render, flip.flip, other actions]. Totally possible but a distraction given the time allotted
+    // NOTE: A postprocessor would also handle this smoothly - to think about
+    [COMMAND_RENDER]: (machineComponent, params, next) => {
+      const props = Object.assign({}, params, { next, hasStarted: true });
+      machineComponent.set(props);
     }
   }
 };

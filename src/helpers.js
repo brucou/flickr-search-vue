@@ -1,5 +1,7 @@
-import { COMMAND_RENDER, NO_STATE_UPDATE } from "./properties";
+import { NO_STATE_UPDATE } from "./properties";
 import fetchJsonp from "fetch-jsonp";
+import { applyPatch } from "json-patch-es6";
+import {COMMAND_RENDER} from "vue-state-driven"
 
 /**
  *
@@ -18,6 +20,14 @@ export function applyJSONpatch(extendedState, extendedStateUpdateOperations) {
   ).newDocument;
 }
 
+export function destructureEvent(eventStruct) {
+  return {
+    rawEventName: eventStruct[0],
+    rawEventData: eventStruct[1],
+    ref: eventStruct[2]
+  };
+}
+
 export function renderAction(params) {
   return {
     outputs: [{ command: COMMAND_RENDER, params }],
@@ -32,22 +42,6 @@ export function renderGalleryApp(galleryState) {
     return renderAction({ query, items, photo, gallery: galleryState })
   };
 }
-
-export const getEventEmitterAdapter = emitonoff => {
-  const eventEmitter = emitonoff();
-  const DUMMY_NAME_SPACE = "_";
-  const subscribers = [];
-
-  return {
-    subjectFactory: () => ({
-      next: x => eventEmitter.emit(DUMMY_NAME_SPACE, x),
-      complete: () => subscribers.forEach(f => eventEmitter.off(DUMMY_NAME_SPACE, f)),
-      subscribe: ({ next: f, error: _, complete: __ }) => {
-        return (subscribers.push(f), eventEmitter.on(DUMMY_NAME_SPACE, f));
-      }
-    })
-  };
-};
 
 export function runSearchQuery(query) {
   const encodedQuery = encodeURIComponent(query);
