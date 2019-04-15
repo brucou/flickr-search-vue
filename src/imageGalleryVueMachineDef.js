@@ -2,12 +2,10 @@ import { COMMAND_SEARCH, NO_INTENT } from "./properties"
 import {COMMAND_RENDER} from "vue-state-driven"
 import { INIT_EVENT } from "state-transducer"
 import  GalleryApp from "./GalleryApp"
-import Flipping from "flipping"
 import { destructureEvent, runSearchQuery } from "./helpers"
 import { filter, map } from "rxjs/operators"
 import { Subject } from "rxjs"
 
-const flipping = new Flipping();
 const stateTransducerRxAdapter = {
   subjectFactory: () => new Subject()
 };

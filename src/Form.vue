@@ -14,11 +14,6 @@
     </form>
 </template>
 
-<!--<Form v-bind:galleryState="gallery"-->
-      <!--v-bind:onSubmit="onSubmit"-->
-      <!--v-bind:onClick="onCancelClick">-->
-<!--</Form>>-->
-
 <script>
   export default {
     props : ["galleryState", "onSubmit", "onClick"],
